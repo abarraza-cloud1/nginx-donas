@@ -18,6 +18,8 @@
 !/.github/**
 !/terraform/**
 !/scripts/**
+!/v2/
+!/v2/**
 
 # Terraform local artifacts
 **/.terraform/

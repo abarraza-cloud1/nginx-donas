@@ -174,9 +174,9 @@ jobs:
           echo "TFC_WORKSPACE=nginx-plus-ec2-$repo_name" >> "$GITHUB_ENV"
           echo "TF_WORKSPACE=nginx-plus-ec2-$repo_name" >> "$GITHUB_ENV"
           echo "NAME_PREFIX=nginx-plus-$repo_name" >> "$GITHUB_ENV"
-          # FIX-03: restrict SSH to the GitHub Actions runner IP instead of 0.0.0.0/0
-          runner_ip="$(curl -fsSL https://api.ipify.org)"
-          echo "SSH_CIDR=${runner_ip}/32" >> "$GITHUB_ENV"
+
+
+          echo "SSH_CIDR=0.0.0.0/0" >> "$GITHUB_ENV"
 
       - name: Ensure TFC workspace
         shell: bash

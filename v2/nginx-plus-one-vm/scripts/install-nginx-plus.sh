@@ -5,6 +5,16 @@ if [[ -z "${DATA_PLANE_KEY:-}" ]]; then
   echo "⚠️  DATA_PLANE_KEY not set — skipping NGINX One Console agent registration"
 fi
 
+# Add 2 GB swap — NGINX App Protect (bd-socket-plugin) needs more than 1 GB RAM
+if ! swapon --show | grep -q .; then
+  sudo fallocate -l 2G /swapfile
+  sudo chmod 600 /swapfile
+  sudo mkswap /swapfile
+  sudo swapon /swapfile
+  echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+  echo "Swap created: $(free -h | grep Swap)"
+fi
+
 sudo mkdir -p /etc/ssl/nginx /etc/nginx /etc/apt/keyrings
 
 sudo mv /tmp/nginx-repo.crt /etc/ssl/nginx/nginx-repo.crt

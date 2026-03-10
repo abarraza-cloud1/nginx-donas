@@ -4,7 +4,7 @@ variable "aws_region" {
 
 variable "instance_type" {
   type    = string
-  default = "t3.medium"
+  default = "t3.micro"
 }
 
 variable "ssh_public_key" {

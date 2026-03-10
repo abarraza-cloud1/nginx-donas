@@ -488,8 +488,8 @@ jobs:
             echo "Welcome page detected; attempting remediation (attempt ${attempt}/6)" >&2
             disable_default_html_vhosts
             sudo nginx -t
-            sudo systemctl restart nginx
-            sleep 2
+            sudo systemctl reload nginx
+            sleep 3
           done
 
           echo "ERROR: Welcome page still being served after retries" >&2

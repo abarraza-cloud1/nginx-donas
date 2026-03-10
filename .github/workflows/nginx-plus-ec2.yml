@@ -708,18 +708,12 @@ jobs:
         run: |
           set -euo pipefail
           NGINX_IP="${{ needs.terraform.outputs.public_ip }}"
-          CINE_IP="${{ needs.terraform.outputs.cine_public_ip }}"
-          CINE_PRIVATE="${{ needs.terraform.outputs.cine_private_ip }}"
-
-          echo "=== Upstream direct checks ==="
-          curl -sS -o /dev/null -w "Upstream 3000 HTTP %{http_code}\n" "http://${CINE_PRIVATE}:3000/" || true
-          curl -sS -o /dev/null -w "Upstream 3001 HTTP %{http_code}\n" "http://${CINE_PRIVATE}:3001/" || true
 
           echo "=== NGINX vhost checks ==="
           echo "cine.example.com title:"
-          curl -sS -H "Host: cine.example.com" "http://${NGINX_IP}/" | grep -m1 -E "<title>" || true
+          curl -sS --max-time 10 -H "Host: cine.example.com" "http://${NGINX_IP}/" | grep -m1 -E "<title>" || true
           echo "cine-tmdb.example.com title:"
-          curl -sS -H "Host: cine-tmdb.example.com" "http://${NGINX_IP}/" | grep -m1 -E "<title>" || true
+          curl -sS --max-time 10 -H "Host: cine-tmdb.example.com" "http://${NGINX_IP}/" | grep -m1 -E "<title>" || true
 
       - name: Display Cine app URL
         run: |

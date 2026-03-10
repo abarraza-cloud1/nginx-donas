@@ -2,8 +2,17 @@
 set -euo pipefail
 
 if [[ -z "${DATA_PLANE_KEY:-}" ]]; then
-  echo "DATA_PLANE_KEY is required" >&2
-  exit 1
+  echo "⚠️  DATA_PLANE_KEY not set — skipping NGINX One Console agent registration"
+fi
+
+# Add 2 GB swap — NGINX App Protect (bd-socket-plugin) needs more than 1 GB RAM
+if ! swapon --show | grep -q .; then
+  sudo fallocate -l 2G /swapfile
+  sudo chmod 600 /swapfile
+  sudo mkswap /swapfile
+  sudo swapon /swapfile
+  echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+  echo "Swap created: $(free -h | grep Swap)"
 fi
 
 sudo mkdir -p /etc/ssl/nginx /etc/nginx /etc/apt/keyrings
@@ -12,12 +21,11 @@ sudo mv /tmp/nginx-repo.crt /etc/ssl/nginx/nginx-repo.crt
 sudo mv /tmp/nginx-repo.key /etc/ssl/nginx/nginx-repo.key
 sudo mv /tmp/license.jwt /etc/nginx/license.jwt
 
-
 sudo chown root:root /etc/ssl/nginx/nginx-repo.crt /etc/ssl/nginx/nginx-repo.key
 sudo chmod 600 /etc/ssl/nginx/nginx-repo.key
 sudo chmod 644 /etc/ssl/nginx/nginx-repo.crt
 
-
+sudo chown root:root /etc/nginx/license.jwt
 sudo chmod 644 /etc/nginx/license.jwt
 
 sudo tee /etc/apt/apt.conf.d/90nginx >/dev/null <<'EOF'
@@ -70,7 +78,11 @@ sudo nginx -t
 sudo systemctl enable --now nginx
 sudo systemctl reload nginx
 
-curl https://agent.connect.nginx.com/nginx-agent/install | \
-  sudo DATA_PLANE_KEY="$DATA_PLANE_KEY" sh -s -- -y
-
-sudo systemctl enable --now nginx-agent
+if [[ -n "${DATA_PLANE_KEY:-}" ]]; then
+  curl https://agent.connect.nginx.com/nginx-agent/install | \
+    sudo DATA_PLANE_KEY="$DATA_PLANE_KEY" sh -s -- -y
+  sudo systemctl enable --now nginx-agent
+  echo "NGINX One Console agent installed and started."
+else
+  echo "Skipping NGINX One Console agent (DATA_PLANE_KEY not set)."
+fi

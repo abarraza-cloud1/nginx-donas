@@ -304,7 +304,6 @@ jobs:
       NGINX_REPO_CRT: ${{ secrets.NGINX_REPO_CRT }}
       NGINX_REPO_KEY: ${{ secrets.NGINX_REPO_KEY }}
       LICENSE_JWT: ${{ secrets.LICENSE_JWT }}
-      LICENSE_KEY: ${{ secrets.LICENSE_KEY }}
       DATA_PLANE_KEY: ${{ secrets.DATA_PLANE_KEY }}
       SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
     steps:
@@ -348,7 +347,6 @@ jobs:
           printf '%s' "$NGINX_REPO_CRT" > /tmp/nginx-repo.crt
           printf '%s' "$NGINX_REPO_KEY" > /tmp/nginx-repo.key
           printf '%s' "$LICENSE_JWT" > /tmp/license.jwt
-          printf '%s' "$LICENSE_KEY" > /tmp/license.key
 
           ssh_opts=(-o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 -o ServerAliveInterval=10 -o ServerAliveCountMax=3)
 
@@ -373,7 +371,6 @@ jobs:
           scp_retry /tmp/nginx-repo.crt "ubuntu@${BASTION}:/tmp/nginx-repo.crt"
           scp_retry /tmp/nginx-repo.key "ubuntu@${BASTION}:/tmp/nginx-repo.key"
           scp_retry /tmp/license.jwt "ubuntu@${BASTION}:/tmp/license.jwt"
-          scp_retry /tmp/license.key "ubuntu@${BASTION}:/tmp/license.key"
 
       - name: Install NGINX Plus + WAF + Agent
         run: |
@@ -489,8 +486,8 @@ jobs:
             echo "Welcome page detected; attempting remediation (attempt ${attempt}/6)" >&2
             disable_default_html_vhosts
             sudo nginx -t
-            sudo systemctl restart nginx
-            sleep 2
+            sudo systemctl reload nginx
+            sleep 3
           done
 
           echo "ERROR: Welcome page still being served after retries" >&2
